@@ -4,13 +4,15 @@ use anyhow::{anyhow, Result};
 use std::process::ExitCode;
 use msal::authentication::PublicClientApplication;
 use himmelblau_unix_common::constants::{DEFAULT_CONFIG_PATH, DEFAULT_APP_ID};
-use himmelblau_unix_common::config::HimmelblauConfig;
+use himmelblau_unix_common::config::{HimmelblauConfig, split_username};
 use std::io;
 use std::io::Write;
 use himmelblau_unix_common::client_sync::call_daemon_blocking;
 use himmelblau_unix_common::unix_proto::{ClientRequest, ClientResponse};
 use users::{get_current_gid, get_current_uid, get_effective_gid, get_effective_uid};
 use tokio;
+use rpassword::prompt_password;
+use reqwest::{Url, header};
 
 async fn enroll(config: HimmelblauConfig, domain: &str, admin: &str) -> Result<()> {
     let (_tenant_id, authority_url, graph) = config.get_authority_url(domain).await;
@@ -53,6 +55,30 @@ async fn enroll(config: HimmelblauConfig, domain: &str, admin: &str) -> Result<(
     }
 }
 
+async fn passwd(config: HimmelblauConfig, login: &str) -> Result<()> {
+    debug!("Changing password for {}.", login);
+    let domain = split_username(login) {
+        Some((_, domain)) => domain,
+        None => return Err(anyhow!("Not an Azure AD user")),
+    };
+    let current_passwd = prompt_password("Current password: ")?;
+    let new_passwd = prompt_password("New password: ")?;
+    if current_passwd == new_passwd {
+        error!("BAD PASSWORD: The password is the same as the old one");
+        error!("password unchanged");
+    } else {
+        info!("You must authenticate to Azure AD to continue...");
+        let app_id = config.get_app_id(domain);
+        let (_tenant_id, authority_url, graph) = config.get_authority_url(domain).await;
+        let app = PublicClientApplication::new(&app_id, authority_url.as_str());
+        let scopes = vec!["Directory.AccessAsUser.All"];
+        let token = match app.acquire_token_interactive(scopes, "login", XXX, domain) {
+            Ok(token) => token,
+            Err(e) => return Err(anyhow!("Failed changing password: {}", e))
+        };
+    }
+}
+
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> ExitCode {
     let cuid = get_current_uid();
@@ -74,6 +100,16 @@ async fn main() -> ExitCode {
                 .short('r')
                 .long("skip-root-check")
                 .action(ArgAction::SetTrue),
+        )
+        .subcommand(
+            SubCommand::with_name("passwd")
+                .about("Change a users password")
+            .arg(
+                Arg::with_name("LOGIN")
+                    .value_name("LOGIN")
+                    .help("The user for which to change the password")
+                    .required(true)
+            )
         )
         .subcommand(
             SubCommand::with_name("cache")
@@ -184,6 +220,10 @@ async fn main() -> ExitCode {
                     return ExitCode::FAILURE;
                 }
             };
+        },
+        Some(("passwd", args)) => {
+            let login: &str = args.value_of("LOGIN")
+                .expect("Failed unwrapping the user login name");
         },
         Some(("invalidate", _args)) => {
             let req = ClientRequest::InvalidateCache;
