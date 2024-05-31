@@ -113,6 +113,10 @@ jobs:
       run: |
         rm -rf .git
 
+    - name: '[general] - Remove .github directory'
+      run: |
+        rm -rf .github
+
     - name: '[general] - Save original source'
       run: |
         cargo clean
