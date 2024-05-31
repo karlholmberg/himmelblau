@@ -134,7 +134,7 @@ jobs:
         fi
         EOL
 
-    - name: '[general] - Delete js files from kanidm'
+    - name: '[patch] - Delete js files from kanidm'
       run: |
         cd ../himmelblau-${{ env.VERSION }}
 
@@ -231,7 +231,7 @@ jobs:
         echo Generated file content:
         cat debian/control
 
-    - name: '[himmelblau] - Prepare config file'
+    - name: '[patch] - Prepare config file'
       run: |
         export QUILT_PATCHES=debian/patches
         export QUILT_PATCHDIR=debian/patches
