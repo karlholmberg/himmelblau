@@ -397,15 +397,8 @@ jobs:
 
     - name: '[general] - Upload to PPA'
       run: |
-        echo "[ppa]
-        fqdn = ppa.launchpad.net
-        method = https
-        incoming = ~${LAUNCHPAD_USERNAME}/${LAUNCHPAD_PPA}/ubuntu
-        login = anonymous" > /tmp/dput.cf
-        echo "dput:"
-        cat /tmp/dput.cf
         cd package-source
-        dput -c /tmp/dput.cf ppa ./*_source.changes
+        dput ppa:${LAUNCHPAD_USERNAME}/${LAUNCHPAD_PPA} ./*_source.changes
       env:
         LAUNCHPAD_USERNAME: ${{ secrets.LAUNCHPAD_USERNAME }}
         LAUNCHPAD_PPA: ${{ secrets.LAUNCHPAD_PPA }}
