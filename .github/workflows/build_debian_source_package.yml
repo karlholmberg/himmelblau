@@ -365,6 +365,7 @@ jobs:
   upload-to-ppa:
     runs-on: ubuntu-latest
     environment: debian_packaging_environment
+    needs: build-himmelblau-source-package
 
     steps:
 
