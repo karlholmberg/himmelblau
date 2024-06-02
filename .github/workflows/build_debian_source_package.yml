@@ -402,6 +402,8 @@ jobs:
         method = https
         incoming = ~${LAUNCHPAD_USERNAME}/${LAUNCHPAD_PPA}/ubuntu
         login = anonymous" > /tmp/dput.cf
+        echo "dput:"
+        cat /tmp/dput.cf
         cd package-source
         dput -c /tmp/dput.cf ppa ./*_source.changes
       env:
