@@ -417,22 +417,21 @@ jobs:
           exit 1
         fi
 
-        # Ensure the .dsc file exists
+        # Manually sign the .dsc file using gpg
         DSC_FILE=$(ls *.dsc | head -n 1)
         if [ -f "$DSC_FILE" ]; then
-          echo "DSC file found: $DSC_FILE"
-          echo "Current directory: $(pwd)"
-          echo "Listing files:"
-          ls -l
-
-          # Sign the .dsc file using debsign
-          debsign -k${GPG_KEY_FINGERPRINT} "$DSC_FILE"
+          echo "Signing .dsc file: $DSC_FILE"
+          gpg --default-key ${GPG_KEY_FINGERPRINT} --output "${DSC_FILE}.asc" --detach-sign "$DSC_FILE"
+          gpg --default-key ${GPG_KEY_FINGERPRINT} --clearsign --output "${DSC_FILE}.signed" "${DSC_FILE}.asc"
+          mv "${DSC_FILE}.signed" "$DSC_FILE"
+          rm "${DSC_FILE}.asc"
         else
           echo "Error: No .dsc file found."
           exit 1
         fi
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
+
 
     - name: '[general] - Upload to PPA'
       run: |
