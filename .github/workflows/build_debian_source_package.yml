@@ -351,14 +351,49 @@ jobs:
         lintian --fail-on error $PACKAGE_NAME
       continue-on-error: false
 
-    - name: Upload Debian source package artifacts
+    - name: '[general] - Upload Debian source package artifacts'
       uses: actions/upload-artifact@v4
       with:
         name: source-package-artifact
         path: package-source/
 
-    - name: Upload Debian package artifacts
+    - name: '[general] - Upload Debian package artifacts'
       uses: actions/upload-artifact@v4
       with:
         name: packages-artifact
-        path: debian-packages/
+
+  upload-to-ppa:
+    runs-on: ubuntu-latest
+    environment: debian_packaging_environment
+
+    steps:
+
+    - name: '[general] - Install dependencies'
+      run: sudo apt-get update && sudo apt-get install -y dput-ng debhelper devscripts build-essential
+
+    - name: '[general] - Download Debian source package artifacts'
+      uses: actions/download-artifact@v4
+      with:
+        name: source-package-artifact
+        path: package-source/
+
+    - name: '[general] - Set up GPG'
+      run: |
+        echo "$GPG_KEY" | gpg --import
+        echo "$GPG_PASSPHRASE" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --edit-key <your-email> trust quit
+      env:
+        GPG_KEY: ${{ secrets.GPG_KEY }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+    - name: '[general] - Upload to PPA'
+      run: |
+        echo "[ppa]
+        fqdn = ppa.launchpad.net
+        method = https
+        incoming = ~${{ secrets.LAUNCHPAD_USERNAME }}/${{ secrets.LAUNCHPAD_PPA }}/ubuntu
+        login = anonymous" > /tmp/dput.cf
+        cd package-source
+        dput -c /tmp/dput.cf ppa ./*_source.changes
+      env:
+        LAUNCHPAD_USERNAME: ${{ secrets.LAUNCHPAD_USERNAME }}
+        LAUNCHPAD_PPA: ${{ secrets.LAUNCHPAD_PPA }}
