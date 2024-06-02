@@ -371,7 +371,7 @@ jobs:
     steps:
 
     - name: '[general] - Install dependencies'
-      run: sudo apt-get update && sudo apt-get install -y dput-ng debhelper devscripts build-essential
+      run: sudo apt-get update && sudo apt-get install -y dpkg-sig dput-ng debhelper devscripts build-essential
 
     - name: '[general] - Download Debian source package artifacts'
       uses: actions/download-artifact@v4
@@ -403,8 +403,15 @@ jobs:
         GPG_KEY_FINGERPRINT=$(gpg --list-secret-keys --with-colons --fingerprint | awk -F: '/^fpr/{print $10; exit}')
         echo "GPG Key Fingerprint: $GPG_KEY_FINGERPRINT"
 
+        echo "Listing files in package-source directory:"
+        ls -l package-source
+
         # Change directory to package-source
         cd package-source
+
+        # List the specific .dsc file
+        echo "Listing *.dsc files:"
+        ls -l *.dsc
 
         # Ensure the .dsc file exists
         DSC_FILE=$(ls *.dsc | head -n 1)
@@ -415,8 +422,8 @@ jobs:
           exit 1
         fi
 
-        # Sign the .dsc file using the key fingerprint with absolute path
-        debsign -k${GPG_KEY_FINGERPRINT} "$(pwd)/$DSC_FILE"
+        # Sign the .dsc file using dpkg-sig
+        dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$DSC_FILE"
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
 
