@@ -398,8 +398,13 @@ jobs:
     - name: '[general] - Sign the package'
       run: |
         export GPG_TTY=$(tty)
+
+        # Extract the GPG Key ID
+        GPG_KEY_ID=$(gpg --list-secret-keys --with-colons --keyid-format LONG | awk -F: '/^sec/{print $5}')
+
+        # Sign the package
         cd package-source
-        debsign -k${GPG_EMAIL} ./*_source.changes
+        debsign -k${GPG_KEY_ID} ./*_source.changes
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
 
