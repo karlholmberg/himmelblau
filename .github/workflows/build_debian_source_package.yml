@@ -406,14 +406,17 @@ jobs:
         # Change directory to package-source
         cd package-source
 
-        # Sign the source dsc file using the key fingerprint
-        dsc_file=$(ls *.dsc | head -n 1)
-        if [ -f "$dsc_file" ]; then
-          debsign -k${GPG_KEY_FINGERPRINT} "$dsc_file"
+        # Ensure the .dsc file exists
+        DSC_FILE=$(ls *.dsc | head -n 1)
+        if [ -f "$DSC_FILE" ]; then
+          echo "DSC file found: $DSC_FILE"
         else
-          echo "Error: No source dsc file found."
+          echo "Error: No .dsc file found."
           exit 1
         fi
+
+        # Sign the .dsc file using the key fingerprint with absolute path
+        debsign -k${GPG_KEY_FINGERPRINT} "$(pwd)/$DSC_FILE"
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
 
