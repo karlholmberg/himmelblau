@@ -381,11 +381,14 @@ jobs:
 
     - name: '[general] - Set up GPG'
       run: |
-        echo "$GPG_KEY" | gpg --import
-        echo "$GPG_PASSPHRASE" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --edit-key <your-email> trust quit
+        mkdir -p ~/.gnupg
+        echo "use-agent" > ~/.gnupg/gpg.conf
+        gpg --batch --import <(echo "$GPG_KEY")
+        echo "$GPG_PASSPHRASE" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --edit-key $GPG_EMAIL trust quit
       env:
         GPG_KEY: ${{ secrets.GPG_KEY }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
 
     - name: '[general] - Upload to PPA'
       run: |
