@@ -405,15 +405,19 @@ jobs:
         # Change directory to package-source
         cd package-source
 
-        # Sign the .dsc and .changes files using dpkg-sig
-        for file in *_source.changes; do
-          if [ -f "$file" ]; then
-            dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$file"
-          fi
-        done
+        # Sign the .dsc file using debsign
+        DSC_FILE=$(ls *.dsc | head -n 1)
+        if [ -f "$DSC_FILE" ]; then
+          debsign -k${GPG_KEY_FINGERPRINT} "$DSC_FILE"
+        fi
+
+        # Sign the .changes file using dpkg-sig
+        CHANGES_FILE=$(ls *_source.changes | head -n 1)
+        if [ -f "$CHANGES_FILE" ]; then
+            dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
+        fi
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
-
 
     - name: '[general] - Upload to PPA'
       run: |
