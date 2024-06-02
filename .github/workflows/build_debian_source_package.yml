@@ -389,14 +389,15 @@ jobs:
         echo "$GPG_KEY" | gpg --batch --import
 
         # Create a trust file
-        echo -e "5\ny\n" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --command-fd 0 --edit-key $GPG_EMAIL trust
+        echo -e "5\ny\n" | gpg --batch --yes --pinentry-mode loopback --command-fd 0 --edit-key $GPG_EMAIL trust
+
       env:
         GPG_KEY: ${{ secrets.GPG_KEY }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
 
     - name: '[general] - Sign the package'
       run: |
+        export GPG_TTY=$(tty)
         cd package-source
         debsign -k${GPG_EMAIL} ./*_source.changes
       env:
