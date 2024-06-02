@@ -405,9 +405,9 @@ jobs:
         echo "Listing files in package-source directory:"
         ls -l package-source
 
-        # Sign the package using the key fingerprint
+        # Sign the source changes file using the key fingerprint
         cd package-source
-        debsign -k${GPG_KEY_FINGERPRINT} ./*.changes
+        debsign -k${GPG_KEY_FINGERPRINT} ./*_source.changes
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
 
