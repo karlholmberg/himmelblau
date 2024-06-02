@@ -390,9 +390,6 @@ jobs:
 
         # Create a trust file
         echo -e "5\ny\n" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --command-fd 0 --edit-key $GPG_EMAIL trust
-
-        # Verify the key
-        gpg --list-secret-keys --keyid-format LONG
       env:
         GPG_KEY: ${{ secrets.GPG_KEY }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
@@ -403,7 +400,7 @@ jobs:
         echo "[ppa]
         fqdn = ppa.launchpad.net
         method = https
-        incoming = ~${{ secrets.LAUNCHPAD_USERNAME }}/${{ secrets.LAUNCHPAD_PPA }}/ubuntu
+        incoming = ~${LAUNCHPAD_USERNAME}/${LAUNCHPAD_PPA}/ubuntu
         login = anonymous" > /tmp/dput.cf
         cd package-source
         dput -c /tmp/dput.cf ppa ./*_source.changes
