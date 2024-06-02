@@ -395,6 +395,13 @@ jobs:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
 
+    - name: '[general] - Sign the package'
+      run: |
+        cd package-source
+        debsign -k${GPG_EMAIL} ./*_source.changes
+      env:
+        GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
+
     - name: '[general] - Upload to PPA'
       run: |
         cd package-source
