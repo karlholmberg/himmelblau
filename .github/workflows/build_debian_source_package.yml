@@ -405,16 +405,22 @@ jobs:
         # Change directory to package-source
         cd package-source
 
+        # Sign the .changes file using dpkg-sig
+        CHANGES_FILE=$(ls *_source.changes | head -n 1)
+        if [ -f "$CHANGES_FILE" ]; then
+          dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
+        else
+          echo "Error: No .changes file found."
+          exit 1
+        fi
+
         # Sign the .dsc file using debsign
         DSC_FILE=$(ls *.dsc | head -n 1)
         if [ -f "$DSC_FILE" ]; then
           debsign -k${GPG_KEY_FINGERPRINT} "$DSC_FILE"
-        fi
-
-        # Sign the .changes file using dpkg-sig
-        CHANGES_FILE=$(ls *_source.changes | head -n 1)
-        if [ -f "$CHANGES_FILE" ]; then
-            dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
+        else
+          echo "Error: No .dsc file found."
+          exit 1
         fi
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
