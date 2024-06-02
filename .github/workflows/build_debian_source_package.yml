@@ -81,7 +81,7 @@ jobs:
         mkdir -p ../tmp/debian
         # Configuration
         MAIN_PACKAGE_NAME="himmelblau"
-        DISTRIBUTION="experimental"
+        DISTRIBUTION="noble"
         URGENCY="low"
         MAINTAINER_NAME="David Mulder"
         MAINTAINER_EMAIL="dmulder@suse.com"
