@@ -406,12 +406,14 @@ jobs:
         echo "Listing files in package-source directory:"
         ls -l package-source
 
+        # Change directory to package-source
+        cd package-source
+
         # List the specific source changes file
         echo "Listing *_source.changes files:"
-        ls -l package-source/*_source.changes
+        ls -l *_source.changes
 
         # Sign the source changes file using the key fingerprint
-        cd package-source
         for changes_file in *_source.changes; do
           if [ -f "$changes_file" ]; then
             debsign -k${GPG_KEY_FINGERPRINT} "$changes_file"
