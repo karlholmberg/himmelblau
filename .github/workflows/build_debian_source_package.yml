@@ -361,6 +361,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: packages-artifact
+        path: debian-packages/
 
   upload-to-ppa:
     runs-on: ubuntu-latest
