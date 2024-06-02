@@ -382,9 +382,17 @@ jobs:
     - name: '[general] - Set up GPG'
       run: |
         mkdir -p ~/.gnupg
+        chmod 700 ~/.gnupg
         echo "use-agent" > ~/.gnupg/gpg.conf
-        gpg --batch --import <(echo "$GPG_KEY")
-        echo "$GPG_PASSPHRASE" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --edit-key $GPG_EMAIL trust quit
+
+        # Import the GPG key
+        echo "$GPG_KEY" | gpg --batch --import
+
+        # Create a trust file
+        echo -e "5\ny\n" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --command-fd 0 --edit-key $GPG_EMAIL trust
+
+        # Verify the key
+        gpg --list-secret-keys --keyid-format LONG
       env:
         GPG_KEY: ${{ secrets.GPG_KEY }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
