@@ -70,6 +70,12 @@ jobs:
         VERSION=0.4.0
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
+    - name: "[general] - Set debian revision"
+      id: set_revision
+      run: |
+        REVISION=2
+        echo "REVISION=$REVISION" >> $GITHUB_ENV
+
     - name: "[general] - Fetch previous version from Git tags"
       id: get_prev_version
       run: |
@@ -90,7 +96,7 @@ jobs:
         PREVIOUS_VERSION=${{ env.PREVIOUS_VERSION }}
 
         # Set the Debian revision
-        DEBIAN_REVISION="1"
+        DEBIAN_REVISION="${{ env.REVISION }}"
 
         # Construct the full version string
         FULL_VERSION="${{ env.VERSION }}-${DEBIAN_REVISION}"
@@ -181,21 +187,21 @@ jobs:
         EOF
         )
         MAIN_PACKAGE_DEPENDS="libsqlite3-dev, libssl-dev, libpam0g-dev"
-        MAIN_PACKAGE_RECOMMENDS="pam-himmelblau (>= ${{ env.VERSION }}-1), nss-himmelblau (>= ${{ env.VERSION }}-1)"
+        MAIN_PACKAGE_RECOMMENDS="pam-himmelblau (>= ${{ env.VFULL_ERSION }}), nss-himmelblau (>= ${{ env.FULL_VERSION }})"
 
         # Hardcoded values for the PAM package
         PAM_PACKAGE_NAME="pam-himmelblau"
         PAM_PACKAGE_ARCHITECTURE="amd64"
         PAM_PACKAGE_MAINTAINER="David Mulder <dmulder@suse.com>"
         PAM_PACKAGE_DESCRIPTION="PAM module for Himmelblau"
-        PAM_PACKAGE_DEPENDS="libpam0g, himmelblau (>= ${{ env.VERSION }}-1)"
+        PAM_PACKAGE_DEPENDS="libpam0g, himmelblau (>= ${{ env.FULL_VERSION }})"
 
         # Hardcoded values for the NSS package
         NSS_PACKAGE_NAME="nss-himmelblau"
         NSS_PACKAGE_ARCHITECTURE="amd64"
         NSS_PACKAGE_MAINTAINER="David Mulder <dmulder@suse.com>"
         NSS_PACKAGE_DESCRIPTION="NSS module for Himmelblau"
-        NSS_PACKAGE_DEPENDS="himmelblau (>= ${{ env.VERSION }}-1)"
+        NSS_PACKAGE_DEPENDS="himmelblau (>= ${{ env.FULL_VERSION }})"
 
         # Output the control file contents
         cat << EOF > debian/control
@@ -270,11 +276,11 @@ jobs:
     - name: '[general] - Move source package into new directory'
       run: |
         mkdir package-source
-        mv ../himmelblau_${{ env.VERSION }}-1.dsc package-source/
-        mv ../himmelblau_${{ env.VERSION }}-1.debian.tar.xz package-source/
+        mv ../himmelblau_${{ env.FULL_VERSION }}.dsc package-source/
+        mv ../himmelblau_${{ env.FULL_VERSION }}.debian.tar.xz package-source/
         mv ../himmelblau_${{ env.VERSION }}.orig.tar.xz package-source/
-        mv ../himmelblau_${{ env.VERSION }}-1_source.buildinfo package-source/
-        mv ../himmelblau_${{ env.VERSION }}-1_source.changes package-source/
+        mv ../himmelblau_${{ env.FULL_VERSION }}_source.buildinfo package-source/
+        mv ../himmelblau_${{ env.FULL_VERSION }}_source.changes package-source/
 
     - name: '[debug] - List source package files'
       run: |
@@ -284,7 +290,7 @@ jobs:
       run: |
         set -e
         echo "Lintian:"
-        lintian --fail-on error package-source/himmelblau_${{ env.VERSION }}-1.dsc
+        lintian --fail-on error package-source/himmelblau_${{ env.FULL_VERSION }}.dsc
       continue-on-error: false
 
     - name: '[general] - Upload Debian source package artifacts'
@@ -357,8 +363,9 @@ jobs:
         SRC_DIR=$(ls -d */ | grep -v debian | head -n 1)
         cd "$SRC_DIR"
         # Extract the version
-        full_version=$(dpkg-parsechangelog --show-field Version)
-        VERSION=${full_version%%-*}
+        FULL_VERSION=$(dpkg-parsechangelog --show-field Version)
+        echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
+        VERSION=${FULL_VERSION%%-*}
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: '[general] - Build binary packages'
@@ -381,13 +388,13 @@ jobs:
     - name: '[general] - Move packages into new directory'
       run: |
         mkdir debian-packages
-        mv package-source/himmelblau_${{ env.VERSION }}-1_amd64.deb debian-packages/
-        mv package-source/pam-himmelblau_${{ env.VERSION }}-1_amd64.deb debian-packages/
-        mv package-source/nss-himmelblau_${{ env.VERSION }}-1_amd64.deb debian-packages/
+        mv package-source/himmelblau_${{ env.FULL_VERSION }}_amd64.deb debian-packages/
+        mv package-source/pam-himmelblau_${{ env.FULL_VERSION }}_amd64.deb debian-packages/
+        mv package-source/nss-himmelblau_${{ env.FULL_VERSION }}_amd64.deb debian-packages/
 
     - name: '[himmelblau] - Check Debian package'
       run: |
-        PACKAGE_NAME="debian-packages/himmelblau_${{ env.VERSION }}-1_amd64.deb"
+        PACKAGE_NAME="debian-packages/himmelblau_${{ env.FULL_VERSION }}_amd64.deb"
         echo "Listing package contents for: $PACKAGE_NAME"
         dpkg -c $PACKAGE_NAME
         echo "-----------------------------"
@@ -401,7 +408,7 @@ jobs:
 
     - name: '[pam-himmelblau] - Check Debian package'
       run: |
-        PACKAGE_NAME="debian-packages/pam-himmelblau_${{ env.VERSION }}-1_amd64.deb"
+        PACKAGE_NAME="debian-packages/pam-himmelblau_${{ env.FULL_VERSION }}_amd64.deb"
         echo "Listing package contents for: $PACKAGE_NAME"
         dpkg -c $PACKAGE_NAME
         echo "-----------------------------"
@@ -415,7 +422,7 @@ jobs:
 
     - name: '[nss-himmelblau] - Check Debian package'
       run: |
-        PACKAGE_NAME="debian-packages/nss-himmelblau_${{ env.VERSION }}-1_amd64.deb"
+        PACKAGE_NAME="debian-packages/nss-himmelblau_${{ env.FULL_VERSION }}_amd64.deb"
         echo "Listing package contents for: $PACKAGE_NAME"
         dpkg -c $PACKAGE_NAME
         echo "-----------------------------"
@@ -446,35 +453,6 @@ jobs:
       with:
         name: source-package-artifact
         path: package-source/
-
-    - name: '[general] - Check if version exists in PPA'
-      run: |
-        cd package-source
-        DSC_FILE=$(ls *.dsc | head -n 1)
-        PACKAGE_NAME=$(grep '^Source:' "$DSC_FILE" | awk '{print $2}')
-        PACKAGE_VERSION=$(grep '^Version:' "$DSC_FILE" | awk '{print $2}')
-
-        # Extract the upstream version and Debian revision
-        UPSTREAM_VERSION=$(echo "$PACKAGE_VERSION" | cut -d- -f1)
-        DEBIAN_REVISION=$(echo "$PACKAGE_VERSION" | cut -d- -f2)
-
-        # Fetch the list of versions from the PPA
-        PPA_URL="https://launchpad.net/~${LAUNCHPAD_USERNAME}/+archive/ubuntu/${LAUNCHPAD_PPA}/+packages?field.name_filter=${PACKAGE_NAME}&field.status_filter=&field.series_filter="
-        EXISTING_VERSIONS=$(curl -s "$PPA_URL" | grep -oP '(?<=title="'${PACKAGE_NAME}'_'${UPSTREAM_VERSION}').*?(?=_source.changes")')
-
-        # Check if the version already exists
-        if [ -n "$EXISTING_VERSIONS" ]; then
-          echo "Version $UPSTREAM_VERSION already exists in the PPA. Incrementing Debian revision."
-          NEW_DEBIAN_REVISION=$((DEBIAN_REVISION + 1))
-          NEW_PACKAGE_VERSION="${UPSTREAM_VERSION}-${NEW_DEBIAN_REVISION}"
-          dch --local "~ppa" --newversion "$NEW_PACKAGE_VERSION" "Increment Debian revision for existing version."
-          debchange --release --distribution unstable "Increment Debian revision for existing version."
-        else
-          echo "Version $UPSTREAM_VERSION does not exist in the PPA. No need to increment Debian revision."
-        fi
-      env:
-        LAUNCHPAD_USERNAME: ${{ secrets.LAUNCHPAD_USERNAME }}
-        LAUNCHPAD_PPA: ${{ secrets.LAUNCHPAD_PPA }}
 
     - name: '[general] - Set up GPG'
       run: |
