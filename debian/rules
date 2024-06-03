@@ -7,6 +7,9 @@ else
 export RUST_ENV =
 endif
 
+export CARGO_HOME=$(CURDIR)/.cargo
+export CARGO_TARGET_DIR=$(CURDIR)/target
+
 %:
 	dh $@
 
@@ -14,7 +17,7 @@ override_dh_auto_clean:
 	$(RUST_ENV) cargo clean
 
 override_dh_auto_build:
-	$(RUST_ENV) cargo build --release
+	$(RUST_ENV) cargo build --release --offline
 	strip --strip-unneeded target/release/himmelblaud
 	strip --strip-unneeded target/release/himmelblaud_tasks
 	cp target/release/libnss_himmelblau.so target/release/libnss_himmelblau.so.2

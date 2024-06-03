@@ -122,6 +122,11 @@ jobs:
       run: |
         rm -rf .github
 
+    - name: '[general] - vendor crates'
+      run: |
+        cargo install cargo-vendor
+        cargo vendor > .cargo/config
+
     - name: '[general] - Save original source'
       run: |
         cargo clean
