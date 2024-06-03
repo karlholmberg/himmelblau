@@ -422,7 +422,16 @@ jobs:
         if [ -f "$DSC_FILE" ]; then
           echo "Signing .dsc file: $DSC_FILE"
           gpg --default-key ${GPG_KEY_FINGERPRINT} --output "${DSC_FILE}.asc" --detach-sign "$DSC_FILE"
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to detach-sign the .dsc file."
+            exit 1
+          fi
+          echo "Detached signature created: ${DSC_FILE}.asc"
           gpg --default-key ${GPG_KEY_FINGERPRINT} --clearsign --output "${DSC_FILE}.signed" "${DSC_FILE}.asc"
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to clearsign the .asc file."
+            exit 1
+          fi
           mv "${DSC_FILE}.signed" "$DSC_FILE"
           rm "${DSC_FILE}.asc"
         else
@@ -431,7 +440,6 @@ jobs:
         fi
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
-
 
     - name: '[general] - Upload to PPA'
       run: |
