@@ -11,7 +11,7 @@ env:
   RUSTC_WRAPPER: "sccache"
 
 jobs:
-  build-himmelblau-source-package:
+  build-source-package:
     runs-on: ubuntu-latest
 
     steps:
@@ -287,6 +287,56 @@ jobs:
         lintian --fail-on error package-source/himmelblau_${{ env.VERSION }}-1.dsc
       continue-on-error: false
 
+    - name: '[general] - Upload Debian source package artifacts'
+      uses: actions/upload-artifact@v4
+      with:
+        name: source-package-artifact
+        path: package-source/
+
+  build-binary-packages:
+    runs-on: ubuntu-latest
+    environment: debian_packaging_environment
+    needs: build-source-package
+    steps:
+
+    - name: "[general] - Install build dependencies"
+      run: |
+        sudo apt update
+        sudo apt install -y \
+            libpam0g-dev \
+            libudev-dev \
+            libssl-dev \
+            tpm-udev \
+            libtss2-dev \
+            libcap-dev \
+            libtalloc-dev \
+            libtevent-dev \
+            libldb-dev \
+            libdhash-dev \
+            libkrb5-dev \
+            libpcre2-dev \
+            libclang-13-dev \
+            autoconf \
+            gettext \
+            build-essential \
+            cargo \
+            git \
+            quilt \
+            make \
+            gcc \
+            libsqlite3-dev \
+            lintian \
+            patchelf \
+            pkgconf \
+            debhelper-compat \
+            devscripts
+
+    - name: '[general] - Download Debian source package artifacts'
+      uses: actions/download-artifact@v4
+      with:
+        name: source-package-artifact
+        path: package-source/
+
     - name: '[general] - Build binary packages'
       run: |
         cd package-source
@@ -351,12 +401,6 @@ jobs:
         lintian --fail-on error $PACKAGE_NAME
       continue-on-error: false
 
-    - name: '[general] - Upload Debian source package artifacts'
-      uses: actions/upload-artifact@v4
-      with:
-        name: source-package-artifact
-        path: package-source/
-
     - name: '[general] - Upload Debian package artifacts'
       uses: actions/upload-artifact@v4
       with:
@@ -366,10 +410,8 @@ jobs:
   upload-to-ppa:
     runs-on: ubuntu-latest
     environment: debian_packaging_environment
-    needs: build-himmelblau-source-package
-
+    needs: build-binary-packages
     steps:
-
     - name: '[general] - Install dependencies'
       run: sudo apt-get update && sudo apt-get install -y dpkg-sig dput-ng debhelper devscripts build-essential
 
@@ -394,7 +436,7 @@ jobs:
         GPG_KEY: ${{ secrets.GPG_KEY }}
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
 
-    - name: '[general] - Sign the package'
+    - name: '[general] - Sign the package files'
       run: |
         set -e
         export GPG_TTY=$(tty)
@@ -405,16 +447,6 @@ jobs:
 
         # Change directory to package-source
         cd package-source
-
-        # Sign the .changes file using dpkg-sig
-        CHANGES_FILE=$(ls *_source.changes | head -n 1)
-        if [ -f "$CHANGES_FILE" ]; then
-          echo "Signing .changes file: $CHANGES_FILE"
-          dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
-        else
-          echo "Error: No .changes file found."
-          exit 1
-        fi
 
         # Manually sign the .dsc file using gpg
         DSC_FILE=$(ls *.dsc | head -n 1)
@@ -438,6 +470,16 @@ jobs:
           rm "${DSC_FILE}.asc"
         else
           echo "Error: No .dsc file found."
+          exit 1
+        fi
+
+        # Sign the .changes file using dpkg-sig
+        CHANGES_FILE=$(ls *_source.changes | head -n 1)
+        if [ -f "$CHANGES_FILE" ]; then
+          echo "Signing .changes file: $CHANGES_FILE"
+          dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
+        else
+          echo "Error: No .changes file found."
           exit 1
         fi
       env:
