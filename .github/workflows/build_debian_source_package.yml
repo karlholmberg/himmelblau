@@ -462,7 +462,7 @@ jobs:
         GPG_KEY: ${{ secrets.GPG_KEY }}
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
 
-    - name: '[general] - Sign the package files'
+    - name: '[general] - Sign the .dsc file'
       run: |
         set -e
         export GPG_TTY=$(tty)
@@ -498,19 +498,31 @@ jobs:
           echo "Error: No .dsc file found."
           exit 1
         fi
-
-        # Sign the .changes file using dpkg-sig
-        CHANGES_FILE=$(ls *_source.changes | head -n 1)
-        if [ -f "$CHANGES_FILE" ]; then
-          echo "Signing .changes file: $CHANGES_FILE"
-          dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
-        else
-          echo "Error: No .changes file found."
-          exit 1
-        fi
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: '[general] - Generate .changes file'
+        run: |
+          set -e
+          cd package-source
+          debuild -S -k${GPG_KEY_FINGERPRINT}
+
+      - name: '[general] - Sign the .changes file'
+        run: |
+          set -e
+          cd package-source
+          CHANGES_FILE=$(ls *_source.changes | head -n 1)
+          if [ -f "$CHANGES_FILE" ]; then
+            echo "Signing .changes file: $CHANGES_FILE"
+            debsign -k${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
+          else
+            echo "Error: No .changes file found."
+            exit 1
+          fi
+        env:
+          GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: '[general] - Upload to PPA'
       run: |
