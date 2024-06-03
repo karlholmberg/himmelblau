@@ -7,7 +7,7 @@ else
 export RUST_ENV =
 endif
 
-export CARGO_HOME=$(CURDIR)/.cargo
+export CARGO_HOME=$(CURDIR)
 export CARGO_TARGET_DIR=$(CURDIR)/target
 
 %:

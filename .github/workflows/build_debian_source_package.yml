@@ -127,14 +127,13 @@ jobs:
         mkdir .cargo
         cargo install cargo-vendor
         cargo vendor
-        cat <<EOL > .cargo/config.toml
+        cat <<EOL > config.toml
         [source.crates-io]
         replace-with = "vendored-sources"
 
         [source.vendored-sources]
         directory = "vendor"
         EOL
-
 
     - name: '[general] - Save original source'
       run: |
