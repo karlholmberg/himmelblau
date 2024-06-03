@@ -134,6 +134,10 @@ jobs:
         [source.vendored-sources]
         directory = "vendor"
         EOL
+        find vendor -type f -name '*.exe' -delete
+        find vendor -type f -name '*.dll' -delete
+        find vendor -type f -name '*.dylib' -delete
+        find vendor -type f -name '*.a' -delete
 
     - name: '[general] - Save original source'
       run: |
