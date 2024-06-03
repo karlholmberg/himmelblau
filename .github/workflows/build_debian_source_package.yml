@@ -63,12 +63,11 @@ jobs:
       run: |
         git submodule init && git submodule update
 
-    - name: "[general] - Fetch version from Git tags"
-      id: get_version
-      run: |
-        #VERSION=$(git describe --tags --abbrev=0)
-        VERSION=0.4.0
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+  - name: "[general] - Fetch version from Cargo.toml"
+    id: get_version
+    run: |
+      VERSION=$(grep -E '^version\s*=\s*".*"$' Cargo.toml | awk -F\" '{print $2}')
+      echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: "[general] - Fetch previous version from Git tags"
       id: get_prev_version
@@ -436,7 +435,7 @@ jobs:
   upload-source-package-to-ppa:
     runs-on: ubuntu-latest
     environment: debian_packaging_environment
-    needs: build-source-package
+    needs: build-binary-packages
     steps:
     - name: '[general] - Install dependencies'
       run: sudo apt-get update && sudo apt-get install -y dpkg-sig dput-ng debhelper devscripts build-essential
