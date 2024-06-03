@@ -447,6 +447,35 @@ jobs:
         name: source-package-artifact
         path: package-source/
 
+    - name: '[general] - Check if version exists in PPA'
+      run: |
+        cd package-source
+        DSC_FILE=$(ls *.dsc | head -n 1)
+        PACKAGE_NAME=$(grep '^Source:' "$DSC_FILE" | awk '{print $2}')
+        PACKAGE_VERSION=$(grep '^Version:' "$DSC_FILE" | awk '{print $2}')
+
+        # Extract the upstream version and Debian revision
+        UPSTREAM_VERSION=$(echo "$PACKAGE_VERSION" | cut -d- -f1)
+        DEBIAN_REVISION=$(echo "$PACKAGE_VERSION" | cut -d- -f2)
+
+        # Fetch the list of versions from the PPA
+        PPA_URL="https://api.launchpad.net/devel/~${{ secrets.LAUNCHPAD_USERNAME }}/+archive/ubuntu/${{ secrets.LAUNCHPAD_PPA }}/+packages?ws.op=getPublishedSources&source_name=${PACKAGE_NAME}&exact_match=true"
+        EXISTING_VERSIONS=$(curl -s "$PPA_URL" | jq -r '.entries[].source_package_version')
+
+        # Check if the version already exists
+        if echo "$EXISTING_VERSIONS" | grep -q "$UPSTREAM_VERSION"; then
+          echo "Version $UPSTREAM_VERSION already exists in the PPA. Incrementing Debian revision."
+          NEW_DEBIAN_REVISION=$((DEBIAN_REVISION + 1))
+          NEW_PACKAGE_VERSION="${UPSTREAM_VERSION}-${NEW_DEBIAN_REVISION}"
+          dch --local "~ppa" --newversion "$NEW_PACKAGE_VERSION" "Increment Debian revision for existing version."
+          debchange --release --distribution unstable "Increment Debian revision for existing version."
+        else
+          echo "Version $UPSTREAM_VERSION does not exist in the PPA. No need to increment Debian revision."
+        fi
+      env:
+        LAUNCHPAD_USERNAME: ${{ secrets.LAUNCHPAD_USERNAME }}
+        LAUNCHPAD_PPA: ${{ secrets.LAUNCHPAD_PPA }}
+
     - name: '[general] - Set up GPG'
       run: |
         mkdir -p ~/.gnupg
