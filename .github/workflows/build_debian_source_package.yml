@@ -433,10 +433,10 @@ jobs:
         name: packages-artifact
         path: debian-packages/
 
-  upload-to-ppa:
+  upload-source-package-to-ppa:
     runs-on: ubuntu-latest
     environment: debian_packaging_environment
-    needs: build-binary-packages
+    needs: build-source-package
     steps:
     - name: '[general] - Install dependencies'
       run: sudo apt-get update && sudo apt-get install -y dpkg-sig dput-ng debhelper devscripts build-essential
@@ -462,7 +462,7 @@ jobs:
         GPG_KEY: ${{ secrets.GPG_KEY }}
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
 
-    - name: '[general] - Sign the .dsc file'
+    - name: '[general] - Sign the package'
       run: |
         set -e
         export GPG_TTY=$(tty)
@@ -486,7 +486,6 @@ jobs:
             echo "Error: Failed to detach-sign the .dsc file."
             exit 1
           fi
-          echo "Detached signature created: ${DSC_FILE}.asc"
           gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --default-key ${GPG_KEY_FINGERPRINT} --clearsign --output "${DSC_FILE}.signed" "${DSC_FILE}.asc"
           if [ $? -ne 0 ]; then
             echo "Error: Failed to clearsign the .asc file."
@@ -498,28 +497,20 @@ jobs:
           echo "Error: No .dsc file found."
           exit 1
         fi
-      env:
-        GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
-    - name: '[general] - Generate .changes file'
-      run: |
-        set -e
-        cd package-source
-        debuild -S -k${GPG_KEY_FINGERPRINT}
-
-    - name: '[general] - Sign the .changes file'
-      run: |
-        set -e
-        cd package-source
+        # Sign the .changes file using dpkg-sig
         CHANGES_FILE=$(ls *_source.changes | head -n 1)
         if [ -f "$CHANGES_FILE" ]; then
           echo "Signing .changes file: $CHANGES_FILE"
-          debsign -k${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
+          dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
         else
           echo "Error: No .changes file found."
           exit 1
         fi
+
+        # Recalculate checksums and sign the .changes file
+        debsign -k${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
+
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
