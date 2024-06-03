@@ -474,29 +474,39 @@ jobs:
         # Change directory to package-source
         cd package-source
 
-        # Sign the .dsc file using debsign
+        # Manually sign the .dsc file using gpg
         DSC_FILE=$(ls *.dsc | head -n 1)
         if [ -f "$DSC_FILE" ]; then
           echo "Signing .dsc file: $DSC_FILE"
-          DEBSIGN_PGP_ADDITIONAL_ARGS="--pinentry-mode loopback --passphrase $GPG_PASSPHRASE" debsign -k${GPG_KEY_FINGERPRINT} "$DSC_FILE"
+          echo "File path: $(realpath "$DSC_FILE")"
+          echo "File contents:"
+          cat "$DSC_FILE"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --default-key ${GPG_KEY_FINGERPRINT} --output "${DSC_FILE}.asc" --detach-sign "$DSC_FILE"
           if [ $? -ne 0 ]; then
-            echo "Error: Failed to sign the .dsc file."
+            echo "Error: Failed to detach-sign the .dsc file."
             exit 1
           fi
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --default-key ${GPG_KEY_FINGERPRINT} --clearsign --output "${DSC_FILE}.signed" "${DSC_FILE}.asc"
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to clearsign the .asc file."
+            exit 1
+          fi
+          mv "${DSC_FILE}.signed" "$DSC_FILE"
+          rm "${DSC_FILE}.asc"
         else
           echo "Error: No .dsc file found."
           exit 1
         fi
 
-        # Sign the .changes file using debsign
+        # Sign the .changes file using dpkg-sig
         CHANGES_FILE=$(ls *_source.changes | head -n 1)
+
+        # Recalculate checksums
+        debsign -k${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
+
         if [ -f "$CHANGES_FILE" ]; then
           echo "Signing .changes file: $CHANGES_FILE"
-          DEBSIGN_PGP_ADDITIONAL_ARGS="--pinentry-mode loopback --passphrase $GPG_PASSPHRASE" debsign -k${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
-          if [ $? -ne 0 ]; then
-            echo "Error: Failed to sign the .changes file."
-            exit 1
-          fi
+          dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
         else
           echo "Error: No .changes file found."
           exit 1
@@ -507,13 +517,16 @@ jobs:
     - name: '[general] - Upload to PPA'
       run: |
         cd package-source
-        dput ppa:${{ secrets.LAUNCHPAD_USERNAME }}/${{ secrets.LAUNCHPAD_PPA }} ./*_source.changes
+        dput ppa:${LAUNCHPAD_USERNAME}/${LAUNCHPAD_PPA} ./*_source.changes
         if [ $? -ne 0 ]; then
           echo "Error: dput failed."
           exit 1
         else
           echo "Upload completed successfully."
         fi
+      env:
+        LAUNCHPAD_USERNAME: ${{ secrets.LAUNCHPAD_USERNAME }}
+        LAUNCHPAD_PPA: ${{ secrets.LAUNCHPAD_PPA }}
 
     - name: '[general] - Upload Signed Debian source package artifacts'
       uses: actions/upload-artifact@v4
