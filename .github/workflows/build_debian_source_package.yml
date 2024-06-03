@@ -186,7 +186,7 @@ jobs:
         EOF
         )
         MAIN_PACKAGE_DEPENDS="libsqlite3-dev, libssl-dev, libpam0g-dev"
-        MAIN_PACKAGE_RECOMMENDS="pam-himmelblau (>= ${{ env.VFULL_ERSION }}), nss-himmelblau (>= ${{ env.FULL_VERSION }})"
+        MAIN_PACKAGE_RECOMMENDS="pam-himmelblau (>= ${{ env.FULL_VERSION }}), nss-himmelblau (>= ${{ env.FULL_VERSION }})"
 
         # Hardcoded values for the PAM package
         PAM_PACKAGE_NAME="pam-himmelblau"
