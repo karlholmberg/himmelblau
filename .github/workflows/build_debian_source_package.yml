@@ -459,11 +459,11 @@ jobs:
         DEBIAN_REVISION=$(echo "$PACKAGE_VERSION" | cut -d- -f2)
 
         # Fetch the list of versions from the PPA
-        PPA_URL="https://api.launchpad.net/devel/~${{ secrets.LAUNCHPAD_USERNAME }}/+archive/ubuntu/${{ secrets.LAUNCHPAD_PPA }}/+packages?ws.op=getPublishedSources&source_name=${PACKAGE_NAME}&exact_match=true"
-        EXISTING_VERSIONS=$(curl -s "$PPA_URL" | jq -r '.entries[].source_package_version')
+        PPA_URL="https://launchpad.net/~${LAUNCHPAD_USERNAME}/+archive/ubuntu/${LAUNCHPAD_PPA}/+packages?field.name_filter=${PACKAGE_NAME}&field.status_filter=&field.series_filter="
+        EXISTING_VERSIONS=$(curl -s "$PPA_URL" | grep -oP '(?<=title="'${PACKAGE_NAME}'_'${UPSTREAM_VERSION}').*?(?=_source.changes")')
 
         # Check if the version already exists
-        if echo "$EXISTING_VERSIONS" | grep -q "$UPSTREAM_VERSION"; then
+        if [ -n "$EXISTING_VERSIONS" ]; then
           echo "Version $UPSTREAM_VERSION already exists in the PPA. Incrementing Debian revision."
           NEW_DEBIAN_REVISION=$((DEBIAN_REVISION + 1))
           NEW_PACKAGE_VERSION="${UPSTREAM_VERSION}-${NEW_DEBIAN_REVISION}"
