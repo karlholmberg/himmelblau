@@ -341,7 +341,8 @@ jobs:
       id: get_version
       run: |
         cd package-source
-        VERSION=$(dpkg-parsechangelog --show-field Version)
+        full_version=$(dpkg-parsechangelog --show-field Version)
+        VERSION=${full_version%%-*}
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: '[general] - Build binary packages'
