@@ -63,18 +63,20 @@ jobs:
       run: |
         git submodule init && git submodule update
 
-    - name: "[general] - Fetch version from Git tags"
-      id: get_version
-      run: |
-        #VERSION=$(git describe --tags --abbrev=0)
-        VERSION=0.4.0
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-
     - name: "[general] - Set debian revision"
       id: set_revision
       run: |
         REVISION=2
         echo "REVISION=$REVISION" >> $GITHUB_ENV
+
+    - name: "[general] - Fetch version from Git tags"
+      id: get_version
+      run: |
+        #VERSION=$(git describe --tags --abbrev=0)
+        VERSION=0.4.0
+        FULL_VERSION="$VERSION-${{ env.REVISION }}"
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
 
     - name: "[general] - Fetch previous version from Git tags"
       id: get_prev_version
