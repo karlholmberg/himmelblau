@@ -358,6 +358,9 @@ jobs:
 
     - name: '[general] - Build binary packages'
       run: |
+        rustup default stable
+        . $HOME/.cargo/env
+        export PATH="$HOME/.cargo/bin:$PATH"
         cd package-source
         # Find the unpacked source directory
         SRC_DIR=$(ls -d */ | grep -v debian | head -n 1)
