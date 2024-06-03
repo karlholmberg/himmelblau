@@ -361,6 +361,8 @@ jobs:
         rustup default stable
         . $HOME/.cargo/env
         export PATH="$HOME/.cargo/bin:$PATH"
+        rustc --version
+        cargo --version
         cd package-source
         # Find the unpacked source directory
         SRC_DIR=$(ls -d */ | grep -v debian | head -n 1)
