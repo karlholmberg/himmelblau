@@ -519,6 +519,12 @@ jobs:
       run: |
         cd package-source
         dput ppa:${LAUNCHPAD_USERNAME}/${LAUNCHPAD_PPA} ./*_source.changes
+        if [ $? -ne 0 ]; then
+          echo "Error: dput failed."
+          exit 1
+        else
+          echo "Upload completed successfully."
+        fi
       env:
         LAUNCHPAD_USERNAME: ${{ secrets.LAUNCHPAD_USERNAME }}
         LAUNCHPAD_PPA: ${{ secrets.LAUNCHPAD_PPA }}
