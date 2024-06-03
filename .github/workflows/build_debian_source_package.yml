@@ -478,7 +478,7 @@ jobs:
         DSC_FILE=$(ls *.dsc | head -n 1)
         if [ -f "$DSC_FILE" ]; then
           echo "Signing .dsc file: $DSC_FILE"
-          debsign -k${GPG_KEY_FINGERPRINT} "$DSC_FILE"
+          DEBSIGN_PGP_ADDITIONAL_ARGS="--pinentry-mode loopback --passphrase $GPG_PASSPHRASE" debsign -k${GPG_KEY_FINGERPRINT} "$DSC_FILE"
           if [ $? -ne 0 ]; then
             echo "Error: Failed to sign the .dsc file."
             exit 1
@@ -492,7 +492,7 @@ jobs:
         CHANGES_FILE=$(ls *_source.changes | head -n 1)
         if [ -f "$CHANGES_FILE" ]; then
           echo "Signing .changes file: $CHANGES_FILE"
-          debsign -k${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
+          DEBSIGN_PGP_ADDITIONAL_ARGS="--pinentry-mode loopback --passphrase $GPG_PASSPHRASE" debsign -k${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
           if [ $? -ne 0 ]; then
             echo "Error: Failed to sign the .changes file."
             exit 1
@@ -501,20 +501,19 @@ jobs:
           echo "Error: No .changes file found."
           exit 1
         fi
+      env:
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: '[general] - Upload to PPA'
       run: |
         cd package-source
-        dput ppa:${LAUNCHPAD_USERNAME}/${LAUNCHPAD_PPA} ./*_source.changes
+        dput ppa:${{ secrets.LAUNCHPAD_USERNAME }}/${{ secrets.LAUNCHPAD_PPA }} ./*_source.changes
         if [ $? -ne 0 ]; then
           echo "Error: dput failed."
           exit 1
         else
           echo "Upload completed successfully."
         fi
-      env:
-        LAUNCHPAD_USERNAME: ${{ secrets.LAUNCHPAD_USERNAME }}
-        LAUNCHPAD_PPA: ${{ secrets.LAUNCHPAD_PPA }}
 
     - name: '[general] - Upload Signed Debian source package artifacts'
       uses: actions/upload-artifact@v4
