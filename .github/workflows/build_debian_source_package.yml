@@ -337,6 +337,13 @@ jobs:
         name: source-package-artifact
         path: package-source/
 
+    - name: "[general] - Fetch version from Git tags"
+      id: get_version
+      run: |
+        cd package-source
+        VERSION=$(dpkg-parsechangelog --show-field Version)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
     - name: '[general] - Build binary packages'
       run: |
         cd package-source
