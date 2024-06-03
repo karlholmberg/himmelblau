@@ -74,7 +74,7 @@ jobs:
       run: |
         #VERSION=$(git describe --tags --abbrev=0)
         VERSION=0.4.0
-        FULL_VERSION="$VERSION-${{ env.REVISION }}"
+        FULL_VERSION="${VERSION}-${{ env.REVISION }}"
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
 
@@ -97,11 +97,8 @@ jobs:
         # Get the previous tag for comparison
         PREVIOUS_VERSION=${{ env.PREVIOUS_VERSION }}
 
-        # Set the Debian revision
-        DEBIAN_REVISION="${{ env.REVISION }}"
-
         # Construct the full version string
-        FULL_VERSION="${{ env.VERSION }}-${DEBIAN_REVISION}"
+        FULL_VERSION="${{ env.FULL_VERSION }}"
 
         # Output Debian changelog headers
         echo "$MAIN_PACKAGE_NAME ($FULL_VERSION) $DISTRIBUTION; urgency=$URGENCY" > ../tmp/debian/changelog
