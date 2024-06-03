@@ -1,16 +1,20 @@
 #!/usr/bin/make -f
 
-# Ensure the Rust environment is available
-export PATH := $(HOME)/.cargo/bin:$(PATH)
+# Check if local Rust environment is available
+ifneq (,$(wildcard $(HOME)/.cargo/env))
+export RUST_ENV = . $(HOME)/.cargo/env && rustup default stable &&
+else
+export RUST_ENV =
+endif
 
 %:
 	dh $@
 
 override_dh_auto_clean:
-	. $(HOME)/.cargo/env && rustup default stable && cargo clean
+	$(RUST_ENV) cargo clean
 
 override_dh_auto_build:
-	. $(HOME)/.cargo/env && rustup default stable && cargo build --release
+	$(RUST_ENV) cargo build --release
 	strip --strip-unneeded target/release/himmelblaud
 	strip --strip-unneeded target/release/himmelblaud_tasks
 	cp target/release/libnss_himmelblau.so target/release/libnss_himmelblau.so.2
