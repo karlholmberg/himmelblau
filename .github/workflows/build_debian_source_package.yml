@@ -299,6 +299,11 @@ jobs:
     needs: build-source-package
     steps:
 
+    - name: Setup sccache
+      uses: mozilla/sccache-action@v0.0.4
+      with:
+        version: "v0.4.2"
+
     - name: "[general] - Install build dependencies"
       run: |
         sudo apt update
