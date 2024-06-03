@@ -124,6 +124,7 @@ jobs:
 
     - name: '[general] - vendor crates'
       run: |
+        mkdir .cargo
         cargo install cargo-vendor
         cargo vendor > .cargo/config
 
