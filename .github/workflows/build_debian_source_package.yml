@@ -500,6 +500,10 @@ jobs:
 
         # Sign the .changes file using dpkg-sig
         CHANGES_FILE=$(ls *_source.changes | head -n 1)
+
+        # Recalculate checksums
+        debsign -k${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
+
         if [ -f "$CHANGES_FILE" ]; then
           echo "Signing .changes file: $CHANGES_FILE"
           dpkg-sig --sign builder -k ${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
@@ -507,9 +511,6 @@ jobs:
           echo "Error: No .changes file found."
           exit 1
         fi
-
-        # Recalculate checksums and sign the .changes file
-        debsign -k${GPG_KEY_FINGERPRINT} "$CHANGES_FILE"
 
       env:
         GPG_EMAIL: ${{ secrets.GPG_EMAIL }}
