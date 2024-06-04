@@ -125,14 +125,7 @@ jobs:
     - name: '[general] - vendor crates'
       run: |
         cargo install cargo-vendor
-        cargo vendor
-        cat <<EOL > config.toml
-        [source.crates-io]
-        replace-with = "vendored-sources"
-
-        [source.vendored-sources]
-        directory = "vendor"
-        EOL
+        cargo vendor > config.toml
         find vendor -type f -name '*.exe' -delete
         find vendor -type f -name '*.dll' -delete
         find vendor -type f -name '*.dylib' -delete
