@@ -94,15 +94,9 @@ jobs:
         MAINTAINER_NAME="David Mulder"
         MAINTAINER_EMAIL="dmulder@suse.com"
 
-        # Get the previous tag for comparison
-        PREVIOUS_VERSION="${{ env.PREVIOUS_VERSION }}"
-
-        # Construct the full version string
-        FULL_VERSION="${{ env.FULL_VERSION }}"
-
         # Output Debian changelog headers
-        echo "$MAIN_PACKAGE_NAME ($FULL_VERSION) $DISTRIBUTION; urgency=$URGENCY" > ../tmp/debian/changelog
-        git log --pretty=format:"  * %s" "$PREVIOUS_VERSION".."${{ env.VERSION }}" | fold -s -w 72 | awk 'BEGIN {ORS=""; first=1} /^  \*/ {if (!first) print "\n"; first=0; print; next} {print "\n    "$0} END {print "\n"}' >> ../tmp/debian/changelog
+        echo "$MAIN_PACKAGE_NAME (${{ env.FULL_VERSION }}) $DISTRIBUTION; urgency=$URGENCY" > ../tmp/debian/changelog
+        git log --pretty=format:"  * %s" "${{ env.PREVIOUS_VERSION }}".."${{ env.VERSION }}" | fold -s -w 72 | awk 'BEGIN {ORS=""; first=1} /^  \*/ {if (!first) print "\n"; first=0; print; next} {print "\n    "$0} END {print "\n"}' >> ../tmp/debian/changelog
         echo " -- $MAINTAINER_NAME <$MAINTAINER_EMAIL>  $(date -R)" >> ../tmp/debian/changelog
         echo Generated file content:
         cat ../tmp/debian/changelog
