@@ -385,7 +385,7 @@ jobs:
         # Find the unpacked source directory
         SRC_DIR=$(ls -d */ | grep -v debian | head -n 1)
         cd "$SRC_DIR"
-        dpkg-buildpackage -us -uc -v
+        dpkg-buildpackage -us -uc
 
     - name: '[debug] - List built binary packages'
       run: |
