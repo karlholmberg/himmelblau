@@ -124,13 +124,13 @@ jobs:
       run: |
         cargo install cargo-vendor
         cargo vendor > config.toml
+        cargo clean --offline
         cat config.toml
         tar cJf vendor.tar.xz vendor
         rm -rf vendor
         
     - name: '[general] - Save original source'
       run: |
-        cargo clean
         cd ..
         tar cJf himmelblau_${{ env.VERSION }}.orig.tar.xz himmelblau-${{ env.VERSION }}
 
