@@ -11,19 +11,19 @@ endif
 	dh $@
 
 override_dh_auto_clean:
-	@echo "CARGO_HOME=$(CARGO_HOME)"
-	@echo "CARGO_TARGET_DIR=$(CARGO_TARGET_DIR)"
-	@echo "Config file:"
-	@cat $(CARGO_HOME)/config.toml
-	@ls $(CARGO_HOME)/vendor
+	$(RUST_ENV) @echo "CARGO_HOME=$(CARGO_HOME)"
+	$(RUST_ENV) @echo "CARGO_TARGET_DIR=$(CARGO_TARGET_DIR)"
+	$(RUST_ENV) @echo "Config file:"
+	$(RUST_ENV) @cat $(CARGO_HOME)/config.toml
+	$(RUST_ENV) @ls $(CARGO_HOME)/vendor
 	$(RUST_ENV) cargo clean --offline
 
 override_dh_auto_build:
-	@echo "CARGO_HOME=$(CARGO_HOME)"
-	@echo "CARGO_TARGET_DIR=$(CARGO_TARGET_DIR)"
-	@echo "Config file:"
-	@cat $(CARGO_HOME)/config.toml
-	@ls $(CARGO_HOME)/vendor
+	$(RUST_ENV) @echo "CARGO_HOME=$(CARGO_HOME)"
+	$(RUST_ENV) @echo "CARGO_TARGET_DIR=$(CARGO_TARGET_DIR)"
+	$(RUST_ENV) @echo "Config file:"
+	$(RUST_ENV) @cat $(CARGO_HOME)/config.toml
+	$(RUST_ENV) @ls $(CARGO_HOME)/vendor
 	$(RUST_ENV) cargo build --release --offline
 	strip --strip-unneeded target/release/himmelblaud
 	strip --strip-unneeded target/release/himmelblaud_tasks
