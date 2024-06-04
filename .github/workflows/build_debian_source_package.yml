@@ -95,7 +95,7 @@ jobs:
         MAINTAINER_EMAIL="dmulder@suse.com"
 
         echo "Previous version: ${{ env.PREVIOUS_VERSION }}"
-        echo "Full version: ${{ env.FULL_VERSION }}
+        echo "Full version: ${{ env.FULL_VERSION }}"
         echo "Version: ${{ env.VERSION }}"
 
         # Output Debian changelog headers
