@@ -2,19 +2,34 @@
 
 # Check if local Rust environment is available
 ifneq (,$(wildcard $(HOME)/.cargo/env))
-export RUST_ENV = . $(HOME)/.cargo/env && rustup default stable && export CARGO_HOME=$(CURDIR) && export CARGO_TARGET_DIR=$(CURDIR)/target &&
+RUST_ENV = . $(HOME)/.cargo/env && rustup default stable &&
 else
-export RUST_ENV = export CARGO_HOME=$(CURDIR) && export CARGO_TARGET_DIR=$(CURDIR)/target &&
+RUST_ENV =
 endif
+
+export CARGO_HOME=$(CURDIR)
+export CARGO_TARGET_DIR=$(CURDIR)/target
 
 %:
 	dh $@
 
 override_dh_auto_clean:
-	$(RUST_ENV) cargo clean --offline
+	@echo "CARGO_HOME=$(CARGO_HOME)"
+	@echo "CARGO_TARGET_DIR=$(CARGO_TARGET_DIR)"
+	@echo "Config file:"
+	@cat $(CARGO_HOME)/config.toml
+	@echo "Vendor directory contents before clean:"
+	@ls $(CARGO_HOME)/vendor
+	$(RUST_ENV) export CARGO_HOME=$(CARGO_HOME) && export CARGO_TARGET_DIR=$(CARGO_TARGET_DIR) && cargo clean --offline
 
 override_dh_auto_build:
-	$(RUST_ENV) cargo build --release --offline
+	@echo "CARGO_HOME=$(CARGO_HOME)"
+	@echo "CARGO_TARGET_DIR=$(CARGO_TARGET_DIR)"
+	@echo "Config file:"
+	@cat $(CARGO_HOME)/config.toml
+	@echo "Vendor directory contents before build:"
+	@ls $(CARGO_HOME)/vendor
+	$(RUST_ENV) export CARGO_HOME=$(CARGO_HOME) && export CARGO_TARGET_DIR=$(CARGO_TARGET_DIR) && cargo build --release --offline
 	strip --strip-unneeded target/release/himmelblaud
 	strip --strip-unneeded target/release/himmelblaud_tasks
 	cp target/release/libnss_himmelblau.so target/release/libnss_himmelblau.so.2
