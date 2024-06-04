@@ -94,6 +94,10 @@ jobs:
         MAINTAINER_NAME="David Mulder"
         MAINTAINER_EMAIL="dmulder@suse.com"
 
+        echo "Previous version: ${{ env.PREVIOUS_VERSION }}"
+        echo "Full version: ${{ env.FULL_VERSION }}
+        echo "Version: ${{ env.VERSION }}"
+
         # Output Debian changelog headers
         echo "$MAIN_PACKAGE_NAME (${{ env.FULL_VERSION }}) $DISTRIBUTION; urgency=$URGENCY" > ../tmp/debian/changelog
         git log --pretty=format:"  * %s" "${{ env.PREVIOUS_VERSION }}".."${{ env.VERSION }}" | fold -s -w 72 | awk 'BEGIN {ORS=""; first=1} /^  \*/ {if (!first) print "\n"; first=0; print; next} {print "\n    "$0} END {print "\n"}' >> ../tmp/debian/changelog
