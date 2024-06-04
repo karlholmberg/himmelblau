@@ -95,7 +95,7 @@ jobs:
         MAINTAINER_EMAIL="dmulder@suse.com"
 
         # Get the previous tag for comparison
-        PREVIOUS_VERSION=${{ env.PREVIOUS_VERSION }}
+        PREVIOUS_VERSION="${{ env.PREVIOUS_VERSION }}"
 
         # Construct the full version string
         FULL_VERSION="${{ env.FULL_VERSION }}"
