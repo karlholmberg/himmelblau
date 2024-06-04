@@ -2,13 +2,10 @@
 
 # Check if local Rust environment is available
 ifneq (,$(wildcard $(HOME)/.cargo/env))
-export RUST_ENV = . $(HOME)/.cargo/env && rustup default stable &&
+export RUST_ENV = . $(HOME)/.cargo/env && rustup default stable && export CARGO_HOME=$(CURDIR) && export CARGO_TARGET_DIR=$(CURDIR)/target &&
 else
-export RUST_ENV =
+export RUST_ENV = export CARGO_HOME=$(CURDIR) && export CARGO_TARGET_DIR=$(CURDIR)/target &&
 endif
-
-export CARGO_HOME=$(CURDIR)
-export CARGO_TARGET_DIR=$(CURDIR)/target
 
 %:
 	dh $@
