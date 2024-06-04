@@ -122,6 +122,7 @@ jobs:
 
     - name: '[general] - vendor crates'
       run: |
+        cargo generate-lockfile
         cargo install cargo-vendor
         cargo vendor > config.toml
         cargo clean --offline
