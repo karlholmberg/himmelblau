@@ -14,7 +14,7 @@ export CARGO_TARGET_DIR=$(CURDIR)/target
 	dh $@
 
 override_dh_auto_clean:
-	$(RUST_ENV) cargo clean
+	$(RUST_ENV) cargo clean --offline
 
 override_dh_auto_build:
 	$(RUST_ENV) cargo build --release --offline

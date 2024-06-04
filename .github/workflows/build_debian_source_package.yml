@@ -126,6 +126,7 @@ jobs:
       run: |
         cargo install cargo-vendor
         cargo vendor > config.toml
+        cat config.toml
         find vendor -type f -name '*.exe' -delete
         find vendor -type f -name '*.dll' -delete
         find vendor -type f -name '*.dylib' -delete
@@ -133,7 +134,7 @@ jobs:
 
     - name: '[general] - Save original source'
       run: |
-        cargo clean
+        cargo clean --offline
         cd ..
         tar cJf himmelblau_${{ env.VERSION }}.orig.tar.xz himmelblau-${{ env.VERSION }}
 
