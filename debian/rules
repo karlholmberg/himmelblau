@@ -21,6 +21,12 @@ override_dh_auto_build:
 	# Get the CFLAGS and LDFLAGS for ldb
 	export CFLAGS="$(shell pkg-config --cflags ldb)"
 	export LDFLAGS="$(shell pkg-config --libs ldb)"
+	ifeq ($(CFLAGS),)
+		CFLAGS="-I/usr/include/ldb"
+	endif
+	ifeq ($(LDFLAGS),)
+		LDFLAGS="-L/usr/lib -lldb"
+	endif
 	# Extract the vendor dependencies
 	tar -xf vendor.tar.xz
 	# Build the project with the appropriate flags
