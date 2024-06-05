@@ -66,14 +66,14 @@ jobs:
     - name: "[general] - Set debian revision"
       id: set_revision
       run: |
-        REVISION=2
+        REVISION=1
         echo "REVISION=$REVISION" >> $GITHUB_ENV
 
     - name: "[general] - Fetch version from Git tags"
       id: get_version
       run: |
         #VERSION=$(git describe --tags --abbrev=0)
-        VERSION=0.4.1
+        VERSION=0.4.2
         FULL_VERSION="${VERSION}-${{ env.REVISION }}"
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
@@ -120,16 +120,6 @@ jobs:
       run: |
         rm -rf .github
 
-    - name: '[general] - vendor crates'
-      run: |
-        cargo generate-lockfile
-        cargo install cargo-vendor
-        cargo vendor > config.toml
-        cargo clean --offline
-        cat config.toml
-        tar cJf vendor.tar.xz vendor
-        rm -rf vendor
-        
     - name: '[general] - Save original source'
       run: |
         cd ..
@@ -172,6 +162,30 @@ jobs:
         # Avoid adding the patch to the series file multiple times
         if ! grep -q "delete-js-files.patch" debian/patches/series; then
             echo "delete-js-files.patch" >> debian/patches/series
+        fi
+
+    - name: '[patch] - vendor crates'
+      run: |
+        export QUILT_PATCHES=debian/patches
+        export QUILT_PATCHDIR=debian/patches
+
+        quilt new vendor-crates.patch
+        quilt add vendor.tar.xz
+        quilt add cargo.lock
+        quilt add config.toml
+
+        cargo generate-lockfile
+        cargo install cargo-vendor
+        cargo vendor > config.toml
+        cargo clean --offline
+        cat config.toml
+        tar cJf vendor.tar.xz vendor
+        rm -rf vendor
+
+        quilt refresh
+        # Avoid adding the patch to the series file multiple times
+        if ! grep -q "vendor-crates.patch" debian/patches/series; then
+            echo "vendor-crates.patch" >> debian/patches/series
         fi
 
     - name: '[general] - Move changelogs'
