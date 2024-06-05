@@ -43,7 +43,6 @@ jobs:
             libdhash-dev \
             libkrb5-dev \
             libpcre2-dev \
-            libclang-13-dev \
             autoconf \
             gettext \
             build-essential \
@@ -66,7 +65,7 @@ jobs:
     - name: "[general] - Set debian revision"
       id: set_revision
       run: |
-        REVISION=1
+        REVISION=2
         echo "REVISION=$REVISION" >> $GITHUB_ENV
 
     - name: "[general] - Fetch version from Git tags"
@@ -228,7 +227,7 @@ jobs:
         Section: misc
         Priority: optional
         Maintainer: $MAIN_PACKAGE_MAINTAINER
-        Build-Depends: debhelper-compat (= 13), quilt, rustc, cargo, patchelf, libssl-dev, pkg-config, devscripts, libpcre2-dev, libcap-dev, libtalloc-dev, libtevent-dev, libldb-dev, libkrb5-dev, libpcre2-dev, libclang-13-dev
+        Build-Depends: debhelper-compat (= 13), quilt, rustc, cargo, patchelf, libssl-dev, pkg-config, devscripts, libpcre2-dev, libcap-dev, libtalloc-dev, libtevent-dev, libldb-dev, libkrb5-dev, libpcre2-dev
         Standards-Version: 3.9.6
         Homepage: https://github.com/himmelblau-idm/himmelblau
         Vcs-Git: https://github.com/himmelblau-idm/himmelblau.git
