@@ -65,7 +65,7 @@ jobs:
     - name: "[general] - Set debian revision"
       id: set_revision
       run: |
-        REVISION=1
+        REVISION=2
         echo "REVISION=$REVISION" >> $GITHUB_ENV
 
     - name: "[general] - Fetch version from Git tags"
