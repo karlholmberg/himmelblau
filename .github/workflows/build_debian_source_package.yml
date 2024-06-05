@@ -66,14 +66,14 @@ jobs:
     - name: "[general] - Set debian revision"
       id: set_revision
       run: |
-        REVISION=2
+        REVISION=1
         echo "REVISION=$REVISION" >> $GITHUB_ENV
 
     - name: "[general] - Fetch version from Git tags"
       id: get_version
       run: |
         #VERSION=$(git describe --tags --abbrev=0)
-        VERSION=0.4.1
+        VERSION=0.4.2
         FULL_VERSION="${VERSION}-${{ env.REVISION }}"
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
