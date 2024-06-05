@@ -170,7 +170,6 @@ jobs:
         export QUILT_PATCHDIR=debian/patches
 
         quilt new vendor-crates.patch
-        quilt add vendor.tar.xz
         quilt add cargo.lock
         quilt add config.toml
 
