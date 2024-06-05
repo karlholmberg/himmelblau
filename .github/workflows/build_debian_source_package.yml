@@ -56,7 +56,8 @@ jobs:
             patchelf \
             pkgconf \
             debhelper-compat \
-            devscripts
+            devscripts \
+            libclang-13-dev
 
     - name: "[general] - Fetch submodules"
       run: |
