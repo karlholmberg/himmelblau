@@ -65,14 +65,14 @@ jobs:
     - name: "[general] - Set debian revision"
       id: set_revision
       run: |
-        REVISION=2
+        REVISION=1
         echo "REVISION=$REVISION" >> $GITHUB_ENV
 
     - name: "[general] - Fetch version from Git tags"
       id: get_version
       run: |
         #VERSION=$(git describe --tags --abbrev=0)
-        VERSION=0.4.0
+        VERSION=0.4.1
         FULL_VERSION="${VERSION}-${{ env.REVISION }}"
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
@@ -122,7 +122,7 @@ jobs:
     - name: '[general] - Save original source'
       run: |
         cd ..
-        tar cJf himmelblau_${{ env.VERSION }}.orig.tar.xz himmelblau-${{ env.VERSION }}
+        tar --mtime='1970-01-01' cJf himmelblau_${{ env.VERSION }}.orig.tar.xz himmelblau-${{ env.VERSION }}
 
     - name: '[general] - Set up Quilt'
       run: |
@@ -177,7 +177,7 @@ jobs:
         cargo vendor > .cargo/config.toml
         cargo clean --offline
         cat .cargo/config.toml
-        tar cJf vendor.tar.xz vendor
+        tar --mtime='1970-01-01' cJf vendor.tar.xz vendor
         rm -rf vendor
 
         quilt refresh
