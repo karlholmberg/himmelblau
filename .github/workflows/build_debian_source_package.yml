@@ -168,16 +168,16 @@ jobs:
       run: |
         export QUILT_PATCHES=debian/patches
         export QUILT_PATCHDIR=debian/patches
-
+        mkdir .cargo
         quilt new vendor-crates.patch
-        quilt add cargo.lock
-        quilt add config.toml
+        quilt add Cargo.lock
+        quilt add .cargo/config.toml
 
         cargo generate-lockfile
         cargo install cargo-vendor
-        cargo vendor > config.toml
+        cargo vendor > .cargo/config.toml
         cargo clean --offline
-        cat config.toml
+        cat .cargo/config.toml
         tar cJf vendor.tar.xz vendor
         rm -rf vendor
 

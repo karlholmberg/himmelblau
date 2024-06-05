@@ -18,7 +18,6 @@ override_dh_auto_clean:
 
 override_dh_auto_build:
 	tar -xf vendor.tar.xz
-	mv $(CARGO_HOME)/vendor ../vendor
 	$(RUST_ENV) export CARGO_HOME=$(CARGO_HOME) && export CARGO_TARGET_DIR=$(CARGO_TARGET_DIR) && cargo build --release --frozen
 	strip --strip-unneeded target/release/himmelblaud
 	strip --strip-unneeded target/release/himmelblaud_tasks
@@ -27,7 +26,6 @@ override_dh_auto_build:
 	patchelf --set-soname libnss_himmelblau.so.2 target/release/libnss_himmelblau.so.2
 	strip --strip-unneeded target/release/libnss_himmelblau.so.2
 	strip --strip-unneeded target/release/libpam_himmelblau.so
-	mv ../vendor $(CARGO_HOME)/vendor 
 
 override_dh_auto_test:
 	# Skip tests
