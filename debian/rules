@@ -18,20 +18,11 @@ override_dh_auto_clean:
 
 override_dh_auto_build:
 	# Ensure the necessary development package is installed
-	# Get the CFLAGS and LDFLAGS for ldb
-	export CFLAGS="$(shell pkg-config --cflags ldb)"
-	export LDFLAGS="$(shell pkg-config --libs ldb)"
-	ifeq ($(CFLAGS),)
-		CFLAGS="-I/usr/include/ldb"
-	endif
-	ifeq ($(LDFLAGS),)
-		LDFLAGS="-L/usr/lib -lldb"
-	endif
 	# Extract the vendor dependencies
 	tar -xf vendor.tar.xz
 	# Build the project with the appropriate flags
 	$(RUST_ENV) export CARGO_HOME=$(CARGO_HOME) && export CARGO_TARGET_DIR=$(CARGO_TARGET_DIR) && \
-		CFLAGS="$$CFLAGS" LDFLAGS="$$LDFLAGS" cargo build --release --frozen
+		cargo build --release --frozen
 	# Strip unnecessary symbols from the binaries
 	strip --strip-unneeded target/release/himmelblaud
 	strip --strip-unneeded target/release/himmelblaud_tasks
