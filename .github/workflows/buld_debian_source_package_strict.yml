@@ -376,7 +376,7 @@ jobs:
     - name: '[general] - Configure and build with pbuilder'
       run: |
         # Set up pbuilder base tarball
-        sudo pbuilder create --distribution focal --debootstrapopts --variant=buildd
+        pbuilder create --distribution focal --debootstrapopts --variant=buildd
 
         # Build the package
         cd package-source
