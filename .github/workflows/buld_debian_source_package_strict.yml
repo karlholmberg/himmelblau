@@ -339,13 +339,13 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y \
-            pbuilder \
             debootstrap \
             devscripts \
             debhelper \
             quilt \
             wget \
-            git
+            git \
+            fakeroot
 
     - name: '[general] - Download Debian source package artifacts'
       uses: actions/download-artifact@v4
@@ -375,11 +375,24 @@ jobs:
 
     - name: '[general] - Build binary packages with schroot'
       run: |
-        cd package-source
-        # Find the unpacked source directory
+        # Set up a minimal chroot environment
+        sudo debootstrap --variant=buildd focal /srv/chroot/focal http://archive.ubuntu.com/ubuntu/
+
+        # Create a script to perform the build inside the chroot
+        echo '#!/bin/bash
+        apt-get update
+        apt-get install -y devscripts debhelper quilt wget git fakeroot
+        cd /build/package-source
         SRC_DIR=$(ls -d */ | grep -v debian | head -n 1)
         cd "$SRC_DIR"
-        schroot -c focal -u root -- /bin/bash -c "apt-get update && apt-get install -y devscripts debhelper && dpkg-buildpackage -us -uc"
+        dpkg-buildpackage -us -uc' | sudo tee /srv/chroot/focal/build.sh
+        sudo chmod +x /srv/chroot/focal/build.sh
+
+        # Copy the source package into the chroot environment
+        sudo cp -r package-source /srv/chroot/focal/build/
+
+        # Run the build inside the chroot
+        sudo chroot /srv/chroot/focal /build.sh
 
     - name: '[debug] - List built binary packages'
       run: |
