@@ -388,10 +388,11 @@ jobs:
         echo '#!/bin/bash
         set -e
         apt-get update
-        apt-get install -y apt-utils devscripts debhelper wget git fakeroot
+        apt-get install -y apt-utils devscripts debhelper wget git fakeroot equivs
         cd /build/package-source
         SRC_DIR=$(ls -d */ | grep -v debian | head -n 1)
         cd "$SRC_DIR"
+        mk-build-deps -i -t "apt-get -y --no-install-recommends"
         dpkg-buildpackage -us -uc' | sudo tee /srv/chroot/focal/build.sh
         sudo chmod +x /srv/chroot/focal/build.sh
 
@@ -401,7 +402,7 @@ jobs:
 
         # Run the build inside the chroot
         sudo chroot /srv/chroot/focal /build.sh
-        
+
         # Move the built packages back to the original folder
         sudo cp /srv/chroot/focal/build/*.deb package-source/
 
