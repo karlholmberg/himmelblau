@@ -335,10 +335,17 @@ jobs:
       with:
         version: "v0.4.2"
 
-    - name: "[general] - Install launchpad-buildd"
+    - name: "[general] - Install pbuilder and dependencies"
       run: |
         sudo apt update
-        sudo apt install -y launchpad-buildd
+        sudo apt install -y \
+            pbuilder \
+            debootstrap \
+            devscripts \
+            debhelper \
+            quilt \
+            wget \
+            git
 
     - name: '[general] - Download Debian source package artifacts'
       uses: actions/download-artifact@v4
@@ -366,18 +373,17 @@ jobs:
         VERSION=${FULL_VERSION%%-*}
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-    - name: '[general] - Build binary packages'
+    - name: '[general] - Configure and build with pbuilder'
       run: |
-        rustup default stable
-        . $HOME/.cargo/env
-        export PATH="$HOME/.cargo/bin:$PATH"
-        rustc --version
-        cargo --version
+        # Set up pbuilder base tarball
+        sudo pbuilder create --distribution focal --debootstrapopts --variant=buildd
+
+        # Build the package
         cd package-source
         # Find the unpacked source directory
         SRC_DIR=$(ls -d */ | grep -v debian | head -n 1)
         cd "$SRC_DIR"
-        sudo launchpad-buildd build
+        pbuilder build ../*.dsc
 
     - name: '[debug] - List built binary packages'
       run: |
