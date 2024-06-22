@@ -378,11 +378,17 @@ jobs:
         # Set up a minimal chroot environment
         sudo debootstrap --variant=buildd focal /srv/chroot/focal http://archive.ubuntu.com/ubuntu/
 
+        # Ensure necessary filesystems are mounted
+        sudo mount -o bind /dev /srv/chroot/focal/dev
+        sudo mount -o bind /dev/pts /srv/chroot/focal/dev/pts
+        sudo mount -o bind /proc /srv/chroot/focal/proc
+        sudo mount -o bind /sys /srv/chroot/focal/sys
+
         # Create a script to perform the build inside the chroot
         echo '#!/bin/bash
         set -e
         apt-get update
-        apt-get install -y devscripts debhelper wget git fakeroot
+        apt-get install -y apt-utils devscripts debhelper wget git fakeroot
         cd /build/package-source
         SRC_DIR=$(ls -d */ | grep -v debian | head -n 1)
         cd "$SRC_DIR"
@@ -395,6 +401,15 @@ jobs:
 
         # Run the build inside the chroot
         sudo chroot /srv/chroot/focal /build.sh
+        
+        # Move the built packages back to the original folder
+        sudo cp /srv/chroot/focal/build/*.deb package-source/
+
+        # Unmount filesystems after the build
+        sudo umount /srv/chroot/focal/dev/pts
+        sudo umount /srv/chroot/focal/dev
+        sudo umount /srv/chroot/focal/proc
+        sudo umount /srv/chroot/focal/sys
 
     - name: '[debug] - List built binary packages'
       run: |
