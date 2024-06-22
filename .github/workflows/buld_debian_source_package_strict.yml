@@ -380,8 +380,9 @@ jobs:
 
         # Create a script to perform the build inside the chroot
         echo '#!/bin/bash
+        set -e
         apt-get update
-        apt-get install -y devscripts debhelper quilt wget git fakeroot
+        apt-get install -y devscripts debhelper wget git fakeroot
         cd /build/package-source
         SRC_DIR=$(ls -d */ | grep -v debian | head -n 1)
         cd "$SRC_DIR"
@@ -389,6 +390,7 @@ jobs:
         sudo chmod +x /srv/chroot/focal/build.sh
 
         # Copy the source package into the chroot environment
+        sudo mkdir -p /srv/chroot/focal/build
         sudo cp -r package-source /srv/chroot/focal/build/
 
         # Run the build inside the chroot
