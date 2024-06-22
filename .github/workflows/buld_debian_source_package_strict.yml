@@ -388,7 +388,7 @@ jobs:
         echo '#!/bin/bash
         set -e
         apt-get update
-        apt-get install -y apt-utils devscripts debhelper wget git fakeroot equivs
+        apt-get install -y apt-utils devscripts debhelper wget git fakeroot
         cd /build/package-source
         SRC_DIR=$(ls -d */ | grep -v debian | head -n 1)
         cd "$SRC_DIR"
