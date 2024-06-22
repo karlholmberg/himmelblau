@@ -1,4 +1,4 @@
-name: Build Himmelblau Debian source package
+name: Build Himmelblau Debian source package strict
 
 on:
   push:
