@@ -388,6 +388,10 @@ jobs:
         # Add the GitHub runner user to the sbuild group
         sudo sbuild-adduser $USER
 
+        # Ensure the tmp directory is available and writable
+        sudo mkdir -p /srv/chroot/focal/tmp
+        sudo chmod 1777 /srv/chroot/focal/tmp
+
         # Copy the source package into the build environment
         sudo mkdir -p /srv/chroot/focal/build
         sudo cp -r package-source /srv/chroot/focal/build/
@@ -396,7 +400,7 @@ jobs:
         sudo sbuild -A -d focal /srv/chroot/focal/build/package-source/*.dsc
 
         # Move the built packages back to the original folder
-        sudo cp -r /var/lib/sbuild/build /srv/chroot/focal/build/package-source/
+        sudo cp /srv/chroot/focal/build/*.deb package-source/
 
         # Unmount filesystems after the build
         sudo umount /srv/chroot/focal/dev/pts
