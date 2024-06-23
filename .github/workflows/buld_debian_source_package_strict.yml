@@ -374,20 +374,35 @@ jobs:
         VERSION=${FULL_VERSION%%-*}
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-    - name: '[general] - Build binary packages with schroot'
+    - name: '[general] - Configure and build with sbuild'
       run: |
         # Set up a minimal chroot environment
         sudo sbuild-createchroot --include=eatmydata,ccache,gnupg focal /srv/chroot/focal http://archive.ubuntu.com/ubuntu/
 
+        # Ensure necessary filesystems are mounted
+        sudo mount -o bind /dev /srv/chroot/focal/dev
+        sudo mount -o bind /dev/pts /srv/chroot/focal/dev/pts
+        sudo mount -o bind /proc /srv/chroot/focal/proc
+        sudo mount -o bind /sys /srv/chroot/focal/sys
+
+        # Add the GitHub runner user to the sbuild group
+        sudo sbuild-adduser $USER
+
         # Copy the source package into the build environment
-        mkdir -p /srv/chroot/focal/build
-        cp -r package-source /srv/chroot/focal/build/
+        sudo mkdir -p /srv/chroot/focal/build
+        sudo cp -r package-source /srv/chroot/focal/build/
 
         # Build the package using sbuild
         sudo sbuild -A -d focal /srv/chroot/focal/build/package-source/*.dsc
 
         # Move the built packages back to the original folder
         sudo cp /srv/chroot/focal/build/*.deb package-source/
+
+        # Unmount filesystems after the build
+        sudo umount /srv/chroot/focal/dev/pts
+        sudo umount /srv/chroot/focal/dev
+        sudo umount /srv/chroot/focal/proc
+        sudo umount /srv/chroot/focal/sys
 
     - name: '[debug] - List built binary packages'
       run: |
