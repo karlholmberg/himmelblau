@@ -380,10 +380,10 @@ jobs:
         sudo sbuild-createchroot --include=eatmydata,ccache,gnupg focal /srv/chroot/focal http://archive.ubuntu.com/ubuntu/
 
         # Ensure necessary filesystems are mounted
-        sudo mount -o bind /dev /srv/chroot/focal/dev
-        sudo mount -o bind /dev/pts /srv/chroot/focal/dev/pts
-        sudo mount -o bind /proc /srv/chroot/focal/proc
-        sudo mount -o bind /sys /srv/chroot/focal/sys
+        sudo mount --bind /dev /srv/chroot/focal/dev
+        sudo mount --bind /dev/pts /srv/chroot/focal/dev/pts
+        sudo mount --bind /proc /srv/chroot/focal/proc
+        sudo mount --bind /sys /srv/chroot/focal/sys
 
         # Add the GitHub runner user to the sbuild group
         sudo sbuild-adduser $USER
