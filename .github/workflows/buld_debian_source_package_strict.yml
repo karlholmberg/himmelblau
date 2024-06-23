@@ -393,14 +393,14 @@ jobs:
         sudo chmod 1777 /srv/chroot/focal/tmp
 
         # Copy the source package into the build environment
-        sudo mkdir -p /srv/chroot/focal/build
-        sudo cp -r package-source /srv/chroot/focal/build/
+        sudo mkdir -p /srv/chroot/focal/build/package-source
+        sudo cp -r package-source/* /srv/chroot/focal/build/package-source/
 
-        # Build the package using sbuild, specifying a custom build directory
-        sudo sbuild -A -d focal --build-dir=/srv/chroot/focal/build /srv/chroot/focal/build/package-source/*.dsc
+        # Build the package using sbuild
+        sudo sbuild -A -d focal /srv/chroot/focal/build/package-source/*.dsc
 
         # Move the built packages back to the original folder
-        sudo cp /srv/chroot/focal/build/*.deb package-source/
+        sudo cp /var/lib/sbuild/build/*.deb /home/runner/work/himmelblau/himmelblau/package-source/
 
         # Unmount filesystems after the build
         sudo umount /srv/chroot/focal/dev/pts
