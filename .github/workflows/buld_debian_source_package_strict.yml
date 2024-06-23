@@ -340,10 +340,10 @@ jobs:
         sudo apt update
         sudo apt install -y \
             sbuild \
+            schroot \
             debootstrap \
             devscripts \
             debhelper \
-            quilt \
             wget \
             git \
             fakeroot
