@@ -392,6 +392,10 @@ jobs:
         sudo mkdir -p /srv/chroot/focal/tmp
         sudo chmod 1777 /srv/chroot/focal/tmp
 
+        # Ensure the log directory is available and writable
+        sudo mkdir -p /srv/chroot/focal/var/log/sbuild
+        sudo chmod 1777 /srv/chroot/focal/var/log/sbuild
+
         # Copy the source package into the build environment
         sudo mkdir -p /srv/chroot/focal/build/package-source
         sudo cp -r package-source/* /srv/chroot/focal/build/package-source/
