@@ -396,7 +396,7 @@ jobs:
         sudo sbuild -A -d focal /srv/chroot/focal/build/package-source/*.dsc
 
         # Move the built packages back to the original folder
-        sudo cp /srv/chroot/focal/build/*.deb package-source/
+        sudo cp -r /var/lib/sbuild/build /srv/chroot/focal/build/package-source/
 
         # Unmount filesystems after the build
         sudo umount /srv/chroot/focal/dev/pts
